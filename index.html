@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Attendance System</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="script.js" defer></script>
+</head>
+<body>
+    <div class="container">
+        <h1>QR Code Attendance System</h1>
+        
+        <div class="tabs">
+            <button onclick="showTab('register')">Register</button>
+            <button onclick="showTab('login')">Login</button>
+        </div>
+        
+        <div id="register" class="tab-content" style="display: none;">
+            <div class="sub-tabs">
+                <button onclick="showSubTab('student-register')">Register as Student</button>
+                <button onclick="showSubTab('lecturer-register')">Register as Lecturer</button>
+            </div>
+            
+            <div id="student-register" class="sub-tab-content">
+                <h2>Register Student</h2>
+                <input type="text" id="student_id" placeholder="Student ID" required>
+                <input type="text" id="student_name" placeholder="Username" required>
+                <input type="email" id="student_email" placeholder="Student Email" required>
+                <input type="password" id="student_password" placeholder="Password" required>
+                <button onclick="registerStudent()">Register Student</button>
+            </div>
+            
+            <div id="lecturer-register" class="sub-tab-content" style="display: none;">
+                <h2>Register Lecturer</h2>
+                <input type="text" id="lecturer_id" placeholder="Lecturer ID" required>
+                <input type="text" id="lecturer_name" placeholder="Username" required>
+                <input type="email" id="lecturer_email" placeholder="Lecturer Email" required>
+                <input type="password" id="lecturer_password" placeholder="Password" required>
+                <input type="text" id="lecturer_course" placeholder="Course ID" required>
+                <input type="text" id="lecturer_course_name" placeholder="Course Name (if new)">
+                <button onclick="registerLecturer()">Register Lecturer</button>
+            </div>
+        </div>
+        
+        <div id="login" class="tab-content" style="display: none;">
+            <h2>Login</h2>
+            <input type="email" id="email" placeholder="Enter Email" required>
+            <input type="password" id="password" placeholder="Enter Password" required>
+            <button onclick="login()">Login</button>
+        </div>
+    </div>
+
+    <script>
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+            document.getElementById(tabId).style.display = 'block';
+        }
+
+        function showSubTab(subTabId) {
+            document.querySelectorAll('.sub-tab-content').forEach(subTab => subTab.style.display = 'none');
+            document.getElementById(subTabId).style.display = 'block';
+        }
+    </script>
+</body>
+</html>
