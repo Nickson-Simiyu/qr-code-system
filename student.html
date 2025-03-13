@@ -15,8 +15,11 @@
         <!-- QR Code Generation -->
         <button onclick="generateQRCode()">Generate QR Code</button>
         <div id="qrcode"></div>
-
         <!-- Attendance History Table -->
+        <h2>Enroll in a Course</h2>
+        <select id="courseSelect"></select>
+        <button onclick="enrollStudent()">Enroll</button>
+
         <h2>Your Attendance History</h2>
         <table border="1">
             <thead>
@@ -36,6 +39,7 @@
     <script>
         document.addEventListener("DOMContentLoaded", () => {
             fetchStudentAttendance();
+            fetchCourses();
         });
 
 
@@ -48,24 +52,56 @@
             }
 
             fetch(`http://localhost:5000/api/attendance?student_id=${studentID}`)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! Status: ${response.status}`);
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    let tableBody = document.getElementById("student-attendance");
-                    tableBody.innerHTML = ""; // Clear existing rows
+            .then(response => response.json())
+            .then(data => {
+                let tableBody = document.getElementById("student-attendance");
+                tableBody.innerHTML = ""; // Clear existing rows
 
-                    data.forEach(record => {
-                        let row = document.createElement("tr");
-                        row.innerHTML = `<td>${record.scan_datetime}</td><td>${record.course_id}</td>`;
-                        tableBody.appendChild(row);
+                data.forEach(record => {
+                    let row = document.createElement("tr");
+                    row.innerHTML = `<td>${new Date(record.scan_datetime).toLocaleString()}</td>
+                                    <td>${record.course_name}</td>`; // ✅ Use course_name instead of course_id
+                    tableBody.appendChild(row);
+                });
+            })
+            .catch(error => console.error("❌ Error fetching attendance:", error));
+        }
+
+
+        function fetchCourses() {
+            fetch("http://localhost:5000/api/courses")
+                .then(response => response.json())
+                .then(data => {
+                    let courseSelect = document.getElementById("courseSelect");
+                    courseSelect.innerHTML = ""; // Clear existing options
+                    data.forEach(course => {
+                        let option = document.createElement("option");
+                        option.value = course.course_id;
+                        option.textContent = course.course_name;
+                        courseSelect.appendChild(option);
                     });
                 })
-                .catch(error => console.error("❌ Error fetching attendance:", error));
+                .catch(error => console.error("❌ Error fetching courses:", error));
         }
+
+    function enrollStudent() {
+        let studentID = localStorage.getItem("student_id");
+        let courseID = document.getElementById("courseSelect").value;
+
+        if (!studentID || !courseID) {
+            alert("Missing student ID or course selection.");
+            return;
+        }
+
+        fetch("http://localhost:5000/api/enroll", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ student_id: studentID, course_id: courseID })
+        })
+        .then(response => response.json())
+        .then(data => alert(data.message))
+        .catch(error => console.error("❌ Error enrolling:", error));
+    }
 
         function logout() {
             localStorage.removeItem("token");  

@@ -14,9 +14,6 @@ async function registerStudent() {
     alert(data.message);
 }
 
-
-
-
 async function registerLecturer() {
     let lecturer_id = document.getElementById("lecturer_id").value;
     let name = document.getElementById("lecturer_name").value;
@@ -52,26 +49,6 @@ function generateQRCode() {
     });
 }
 
-
-
-function verifyStudentAttendance(studentId, studentName) {
-    fetch("http://localhost:5000/verify-attendance", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ studentId, studentName })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.valid) {
-            alert(`Attendance marked for ${studentName}`);
-        } else {
-            alert("Student not found!");
-        }
-    })
-    .catch(error => console.error("Verification error:", error));
-}
-
-
 async function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
@@ -106,5 +83,19 @@ async function login() {
     }
 }
 
-
-
+function verifyStudentAttendance(studentId, studentName) {
+    fetch("http://localhost:5000/verify-attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ studentId, studentName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.valid) {
+            alert(`Attendance marked for ${studentName}`);
+        } else {
+            alert("Student not found!");
+        }
+    })
+    .catch(error => console.error("Verification error:", error));
+}

@@ -51,7 +51,9 @@
                 (decodedText) => {
                     console.log("✅ Scanned:", decodedText);
                     scannerInstance.clear(); // Stop scanning after a successful read
-                    verifyAttendance(decodedText.trim());
+                    
+                    const [studentId, courseId] = decodedText.trim().split(","); // Extract both values
+                    verifyAttendance(studentId, courseId);
                 },
                 (errorMessage) => {
                     console.warn("⚠️ Scan Error:", errorMessage);
@@ -59,37 +61,63 @@
             );
         }
 
-        function verifyAttendance(studentID) {
-            fetch("http://localhost:5000/verify-attendance", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ student_id: studentID })
-            })
-            .then(res => res.json())
-            .then(data => alert(data.message))
-            .catch(err => console.error("Error:", err));
+        async function verifyAttendance(studentId, courseId) {
+            try {
+                const response = await fetch("http://localhost:5000/verify-attendance", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ student_id: studentId, course_id: courseId }) // Send both values
+                });
+
+                const data = await response.json();
+                console.log("Server response:", data);
+
+                if (data.valid) {
+                    alert(`✅ Success: ${data.message}`);
+                    fetchAttendanceRecords(); // Refresh attendance table
+                } else {
+                    alert(`❌ Error: ${data.message}`);
+                }
+            } catch (error) {
+                console.error("Fetch error:", error);
+            }
         }
 
-        function fetchAttendanceRecords() {
-            fetch("http://localhost:5000/api/attendance")
-                .then(response => response.json())
-                .then(data => {
-                    let tableBody = document.getElementById("attendance-table");
-                    tableBody.innerHTML = ""; 
+        async function fetchAttendanceRecords() {
+            try {
+                const response = await fetch("http://localhost:5000/api/attendance");
+                const data = await response.json();
 
-                    data.forEach(record => {
-                        let row = `<tr>
-                            <td>${record.student_id}</td>
-                            <td>${record.name}</td>
-                            <td>${record.email}</td>
-                            <td>${record.course}</td>
-                            <td>${record.date}</td>
-                        </tr>`;
-                        tableBody.innerHTML += row;
-                    });
-                })
-                .catch(error => console.error("Error fetching data:", error));
+                console.log("Attendance API Response:", data); // Debugging log
+
+                if (!Array.isArray(data)) {
+                    throw new Error("Invalid response format");
+                }
+
+                const tableBody = document.getElementById("attendance-table");
+                tableBody.innerHTML = ""; // Clear previous data
+
+                data.forEach(record => {
+                    const row = document.createElement("tr");
+
+                    // Debugging log: Check actual field names
+                    console.log("Record received:", record);
+
+                    row.innerHTML = `
+                        <td>${record.student_id || "N/A"}</td>
+                        <td>${record.name || "Unknown"}</td>
+                        <td>${record.email || "Unknown"}</td>
+                        <td>${record.course_name || "Unknown"}</td>
+                        <td>${new Date(record.scan_datetime).toLocaleString()}</td>
+                    `;
+                    tableBody.appendChild(row);
+                });
+
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
         }
+
 
         function logout() {
             localStorage.removeItem("token");
